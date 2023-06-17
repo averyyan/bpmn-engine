@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1sdx12c" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.12.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.3.0">
+  <bpmn:process id="Process_0m9bocl" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_19bzom7</bpmn:outgoing>
+      <bpmn:outgoing>Flow_07gqto4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1qtk3xl</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_19bzom7" sourceRef="StartEvent_1" targetRef="Event_02811dw" />
+    <bpmn:intermediateCatchEvent id="Event_02811dw" name="基于消息中间事件">
+      <bpmn:incoming>Flow_19bzom7</bpmn:incoming>
+      <bpmn:outgoing>Flow_1bespk3</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0roxjoe" messageRef="Message_0ukc8f1" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="Event_0te24gq">
+      <bpmn:incoming>Flow_1bespk3</bpmn:incoming>
+      <bpmn:incoming>Flow_0tpwjcu</bpmn:incoming>
+      <bpmn:incoming>Flow_0z7f3ea</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1bespk3" sourceRef="Event_02811dw" targetRef="Event_0te24gq" />
+    <bpmn:sequenceFlow id="Flow_07gqto4" sourceRef="StartEvent_1" targetRef="Event_1indtxq" />
+    <bpmn:intermediateCatchEvent id="Event_1indtxq" name="基于执行时间的中间事件">
+      <bpmn:incoming>Flow_07gqto4</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tpwjcu</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0wh4a7p">
+        <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2023-10-10T00:00:00Z</bpmn:timeDate>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0tpwjcu" sourceRef="Event_1indtxq" targetRef="Event_0te24gq" />
+    <bpmn:sequenceFlow id="Flow_1qtk3xl" sourceRef="StartEvent_1" targetRef="Event_1bksklf" />
+    <bpmn:sequenceFlow id="Flow_0z7f3ea" sourceRef="Event_1bksklf" targetRef="Event_0te24gq" />
+    <bpmn:intermediateCatchEvent id="Event_1bksklf" name="基于延迟时间定时器中间事件">
+      <bpmn:incoming>Flow_1qtk3xl</bpmn:incoming>
+      <bpmn:outgoing>Flow_0z7f3ea</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_09xkzx1">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+  </bpmn:process>
+  <bpmn:message id="Message_0ukc8f1" name="msg">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=msg" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0m9bocl">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_10s2qm0_di" bpmnElement="Event_02811dw">
+        <dc:Bounds x="272" y="79" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="249" y="122" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0te24gq_di" bpmnElement="Event_0te24gq">
+        <dc:Bounds x="372" y="79" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0w33ppt_di" bpmnElement="Event_1indtxq">
+        <dc:Bounds x="272" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="253" y="235" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1tq9whq_di" bpmnElement="Event_1bksklf">
+        <dc:Bounds x="272" y="302" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="259" y="345" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_19bzom7_di" bpmnElement="Flow_19bzom7">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="272" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bespk3_di" bpmnElement="Flow_1bespk3">
+        <di:waypoint x="308" y="97" />
+        <di:waypoint x="372" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07gqto4_di" bpmnElement="Flow_07gqto4">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="240" y="97" />
+        <di:waypoint x="240" y="210" />
+        <di:waypoint x="272" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tpwjcu_di" bpmnElement="Flow_0tpwjcu">
+        <di:waypoint x="308" y="210" />
+        <di:waypoint x="340" y="210" />
+        <di:waypoint x="340" y="97" />
+        <di:waypoint x="372" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qtk3xl_di" bpmnElement="Flow_1qtk3xl">
+        <di:waypoint x="215" y="97" />
+        <di:waypoint x="240" y="97" />
+        <di:waypoint x="240" y="320" />
+        <di:waypoint x="272" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0z7f3ea_di" bpmnElement="Flow_0z7f3ea">
+        <di:waypoint x="308" y="320" />
+        <di:waypoint x="340" y="320" />
+        <di:waypoint x="340" y="97" />
+        <di:waypoint x="372" y="97" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

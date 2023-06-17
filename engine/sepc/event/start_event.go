@@ -1,18 +1,10 @@
 package event
 
-import sepc_types "github.com/averyyan/bpmn-engine/engine/sepc/type"
-
-type StartEvent interface {
-	sepc_types.BaseElement
-}
-
 type TStartEvent struct {
-	ID                  string   `xml:"id,attr"`
-	Name                string   `xml:"name,attr"`
-	IsInterrupting      bool     `xml:"isInterrupting,attr"`
-	ParallelMultiple    bool     `xml:"parallelMultiple,attr"`
-	IncomingAssociation []string `xml:"incoming"`
-	OutgoingAssociation []string `xml:"outgoing"`
+	ID                  string   `xml:"id,attr"`   // 元素ID
+	Name                string   `xml:"name,attr"` // 元素名称
+	IncomingAssociation []string `xml:"incoming"`  // 元素入Flow元素IDs
+	OutgoingAssociation []string `xml:"outgoing"`  // 元素出Flow元素IDs
 }
 
 func (startEvent *TStartEvent) GetID() string {
