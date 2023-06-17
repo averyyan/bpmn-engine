@@ -1,10 +1,10 @@
-package util
+package bpmn_util
 
 import (
 	"encoding/xml"
 	"os"
 
-	"github.com/averyyan/bpmn-engine/engine/sepc/definitions"
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/definitions"
 )
 
 func LoadFromFile(filename string) (*definitions.TDefinitions, error) {

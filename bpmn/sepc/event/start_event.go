@@ -1,5 +1,7 @@
 package event
 
+import sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
+
 type TStartEvent struct {
 	ID                  string   `xml:"id,attr"`   // 元素ID
 	Name                string   `xml:"name,attr"` // 元素名称
@@ -21,4 +23,8 @@ func (startEvent *TStartEvent) GetIncomingAssociation() []string {
 
 func (startEvent *TStartEvent) GetOutgoingAssociation() []string {
 	return startEvent.OutgoingAssociation
+}
+
+func (startEvent *TStartEvent) GetType() sepc_element_types.ElementType {
+	return sepc_element_types.StartEvent
 }

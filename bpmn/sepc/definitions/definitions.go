@@ -1,8 +1,8 @@
 package definitions
 
 import (
-	"github.com/averyyan/bpmn-engine/engine/sepc/message"
-	"github.com/averyyan/bpmn-engine/engine/sepc/process"
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/message"
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/process"
 )
 
 type TDefinitions struct {

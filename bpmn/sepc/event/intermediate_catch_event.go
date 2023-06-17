@@ -1,5 +1,7 @@
 package event
 
+import sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
+
 type TIntermediateCatchEvent struct {
 	ID                     string                   `xml:"id,attr"`                // 元素ID
 	Name                   string                   `xml:"name,attr"`              // 元素名称
@@ -70,6 +72,10 @@ func (ice *TIntermediateCatchEvent) GetIncomingAssociation() []string {
 
 func (ice *TIntermediateCatchEvent) GetOutgoingAssociation() []string {
 	return ice.OutgoingAssociation
+}
+
+func (intermediateCatchEvent *TIntermediateCatchEvent) GetType() sepc_element_types.ElementType {
+	return sepc_element_types.IntermediateCatchEvent
 }
 
 func (ice *TIntermediateCatchEvent) GetMessageEventDefinition() *TMessageEventDefinition {

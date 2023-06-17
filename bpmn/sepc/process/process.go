@@ -1,6 +1,9 @@
 package process
 
-import "github.com/averyyan/bpmn-engine/engine/sepc/event"
+import (
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/event"
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/flow"
+)
 
 // 流程内容
 type TProcess struct {
@@ -11,5 +14,5 @@ type TProcess struct {
 	StartEvents             []*event.TStartEvent             `xml:"startEvent"`             // 开始事件
 	EndEvents               []*event.TEndEvent               `xml:"endEvent"`               // 结束事件
 	IntermediateCatchEvents []*event.TIntermediateCatchEvent `xml:"intermediateCatchEvent"` // 中间事件
-
+	SequenceFlows           []*flow.TSequenceFlow            `xml:"sequenceFlow"`           // 序列流
 }

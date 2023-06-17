@@ -3,13 +3,13 @@ package test
 import (
 	"testing"
 
-	"github.com/averyyan/bpmn-engine/engine/util"
+	bpmn_util "github.com/averyyan/bpmn-engine/bpmn/util"
 	"github.com/corbym/gocrest/is"
 	"github.com/corbym/gocrest/then"
 )
 
 func TestEvents(t *testing.T) {
-	dfs, err := util.LoadFromFile("cases/events.bpmn")
+	dfs, err := bpmn_util.LoadFromFile("cases/events.bpmn")
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, len(dfs.Process.IntermediateCatchEvents), is.EqualTo(3))
 	for _, ice := range dfs.Process.IntermediateCatchEvents {
