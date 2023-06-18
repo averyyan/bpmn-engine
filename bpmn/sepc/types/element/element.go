@@ -1,5 +1,22 @@
 package sepc_element_types
 
+// 活动的生命周期 pdf 429页
+type LifecycleState string
+
+const (
+	Ready        LifecycleState = "READY"        // 准备状态
+	Active       LifecycleState = "ACTIVE"       // 活动状态
+	WithDrawn    LifecycleState = "WITHDRAWN"    // 撤回(未启用)
+	Completing   LifecycleState = "COMPLETING"   // 完成中(未启用)
+	Completed    LifecycleState = "COMPLETED"    // 已完成
+	Failing      LifecycleState = "FAILING"      // 失败中(未启用)
+	Terminating  LifecycleState = "TERMINATING"  // 停止中(未启用)
+	Compensating LifecycleState = "COMPENSATING" // 修正中(未启用)
+	Failed       LifecycleState = "FAILED"       // 已失败
+	Terminated   LifecycleState = "TERMINATED"   // 已停止(未启用)
+	Compensated  LifecycleState = "COMPENSATED"  // 已修正
+)
+
 type ElementType string
 
 const (

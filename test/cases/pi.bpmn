@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_017m7vi" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.12.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.2.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_017m7vi" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.12.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.2.0">
   <bpmn:process id="Process_1vlirp4" name="测试流程实例" isExecutable="true">
+    <bpmn:extensionElements />
     <bpmn:startEvent id="StartEvent_1" name="测试流程实例开始">
-      <bpmn:outgoing>Flow_0k90a39</bpmn:outgoing>
+      <bpmn:outgoing>Flow_17tyt86</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:endEvent id="Event_0wk1did" name="测试流程实例结束">
       <bpmn:incoming>Flow_0k90a39</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0k90a39" sourceRef="StartEvent_1" targetRef="Event_0wk1did" />
+    <bpmn:sequenceFlow id="Flow_0k90a39" sourceRef="Activity_01s4r6r" targetRef="Event_0wk1did" />
+    <bpmn:sequenceFlow id="Flow_17tyt86" sourceRef="StartEvent_1" targetRef="Activity_01s4r6r" />
+    <bpmn:serviceTask id="Activity_01s4r6r" name="流程service task">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="test" />
+        <zeebe:properties>
+          <zeebe:property name="service" value="value" />
+        </zeebe:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_17tyt86</bpmn:incoming>
+      <bpmn:outgoing>Flow_0k90a39</bpmn:outgoing>
+    </bpmn:serviceTask>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1vlirp4">
@@ -18,14 +30,21 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0wk1did_di" bpmnElement="Event_0wk1did">
-        <dc:Bounds x="272" y="79" width="36" height="36" />
+        <dc:Bounds x="552" y="79" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="246" y="122" width="88" height="14" />
+          <dc:Bounds x="526" y="122" width="88" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15klcmz_di" bpmnElement="Activity_01s4r6r">
+        <dc:Bounds x="310" y="57" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0k90a39_di" bpmnElement="Flow_0k90a39">
+        <di:waypoint x="410" y="97" />
+        <di:waypoint x="552" y="97" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17tyt86_di" bpmnElement="Flow_17tyt86">
         <di:waypoint x="215" y="97" />
-        <di:waypoint x="272" y="97" />
+        <di:waypoint x="310" y="97" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

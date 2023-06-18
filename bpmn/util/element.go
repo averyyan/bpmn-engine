@@ -16,10 +16,10 @@ func MakeElementMap(definitions *definitions.TDefinitions) map[string]sepc_types
 	for _, endEvent := range definitions.Process.EndEvents {
 		appender(endEvent)
 	}
+	for _, task := range definitions.Process.ServiceTasks {
+		appender(task)
+	}
 	// for _, task := range definitions.Process.CallActivitys {
-	// 	appender(task)
-	// }
-	// for _, task := range definitions.Process.ServiceTasks {
 	// 	appender(task)
 	// }
 	// for _, task := range definitions.Process.UserTasks {
