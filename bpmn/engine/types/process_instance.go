@@ -18,9 +18,9 @@ type ProcessInstanceManager interface {
 	SetCompleted(ctx context.Context, pi ProcessInstance) error
 	// 设置流程实例为失败状态
 	SetFailed(ctx context.Context, pi ProcessInstance) error
-	// 添加flowID到ScheduledFlows
+	// 添加flowID到ScheduledFlows 处理并行网关使用
 	AppendScheduledFlows(ctx context.Context, pi ProcessInstance, flowID string) error
-	// 删除flowID到ScheduledFlows
+	// 删除flowID到ScheduledFlows 处理并行网关使用
 	RemoveScheduledFlows(ctx context.Context, pi ProcessInstance, flowID string) error
 }
 
@@ -34,4 +34,6 @@ type ProcessInstance interface {
 	GetDefinitions() (*definitions.TDefinitions, error)
 	// 通过元素ID获取流程实例中元素
 	FindBaseElementsById(id string) (sepc_types.BaseElement, error)
+	// 获取流程实例全局上下文
+	GetVariables() map[string]any
 }

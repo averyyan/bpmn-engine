@@ -7,10 +7,16 @@ import (
 
 // activ *activatedActivity github.com/averyyan/bpmn-engine/bpmn/engine/types.ActivatedActivity
 type activatedActivity struct {
+	pi              engine_types.ProcessInstance
 	activ           engine_types.Activity
 	baseElement     sepc_types.ServiceTaskElement
 	completeHandler func() error
 	failHandler     func(reason string) error
+}
+
+// 获取流程实例
+func (activ *activatedActivity) GetProcessInstance() engine_types.ProcessInstance {
+	return activ.pi
 }
 
 func (activ *activatedActivity) GetActivity() engine_types.Activity {

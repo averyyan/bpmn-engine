@@ -25,6 +25,8 @@ type Activity interface {
 }
 
 type ActivatedActivity interface {
+	// 获取流程实例
+	GetProcessInstance() ProcessInstance
 	// 获取活动实例
 	GetActivity() Activity
 	// 获取元素

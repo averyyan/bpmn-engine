@@ -51,22 +51,21 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 	default:
 		return fmt.Errorf("未存在此流程实例状态")
 	}
-	// 循环元素队列直到完成
+	// 循环元素队列直到完成 TODO:协程并行
 	for len(queue) > 0 {
 		baseElement := queue[0].baseElement
 		inboundFlowId := queue[0].inboundFlowId
 		// 核心函数 处理元素并且判断是否存在下一个元素
-		continueNextElement, err := handleElement(ctx, state, pi, baseElement)
+		nextFlows, err := handleElement(ctx, state, pi, baseElement)
 		if err != nil {
 			return err
 		}
-		if continueNextElement {
+		if len(nextFlows) > 0 {
 			if inboundFlowId != "" {
 				if err := state.ProcessInstanceManager().RemoveScheduledFlows(ctx, pi, inboundFlowId); err != nil {
 					return err
 				}
 			}
-			nextFlows := findSequenceFlows(definitions.Process.SequenceFlows, baseElement.GetOutgoingAssociation())
 			for _, flow := range nextFlows {
 				if err := state.ProcessInstanceManager().AppendScheduledFlows(ctx, pi, flow.ID); err != nil {
 					return err

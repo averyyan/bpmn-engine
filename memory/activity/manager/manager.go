@@ -29,7 +29,15 @@ func (manager *ActivityManager) Create(ctx context.Context, pi engine_types.Proc
 
 // 按状态查找活动
 func (manager *ActivityManager) FindByStates(ctx context.Context, pi engine_types.ProcessInstance, states []sepc_element_types.LifecycleState) ([]engine_types.Activity, error) {
-	panic("not implemented") // TODO: Implement
+	var activs []engine_types.Activity
+	for _, state := range states {
+		for _, activ := range manager.activs {
+			if state == activ.GetState() {
+				activs = append(activs, activ)
+			}
+		}
+	}
+	return activs, nil
 }
 
 // 设置活动状态为完成

@@ -23,3 +23,18 @@ func TestRun(t *testing.T) {
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }
+
+func TestExclusivelyGateway(t *testing.T) {
+	v := 1
+	state := memory_engine.New()
+	fun := func(activ engine_types.ActivatedActivity) error {
+		fmt.Println(activ.GetElement().GetName())
+		return activ.Complete()
+	}
+	state.TaskHandlerManager().RegisterServiceTaskHandler("test0", fun)
+	state.TaskHandlerManager().RegisterServiceTaskHandler("test1", fun)
+	state.TaskHandlerManager().RegisterServiceTaskHandler("test2", fun)
+	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/exclusively-gateway.bpmn", map[string]any{"v": v})
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
+}

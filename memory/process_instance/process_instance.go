@@ -37,6 +37,11 @@ type ProcessInstance struct {
 	elementMap map[string]sepc_types.BaseElement
 }
 
+// 获取流程实例全局上下文
+func (pi *ProcessInstance) GetVariables() map[string]any {
+	return pi.variables
+}
+
 // 获取流程唯一Key
 func (pi *ProcessInstance) GetKey() string {
 	return pi.key
