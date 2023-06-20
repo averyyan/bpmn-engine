@@ -11,3 +11,12 @@ func RemoveString(strings []string, s string) []string {
 	}
 	return strings
 }
+
+func ContainsString(strings []string, s string) bool {
+	for _, aString := range strings {
+		if aString == s {
+			return true
+		}
+	}
+	return false
+}

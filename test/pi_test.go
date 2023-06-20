@@ -25,7 +25,7 @@ func TestRun(t *testing.T) {
 }
 
 func TestExclusivelyGateway(t *testing.T) {
-	v := 1
+	v := 2
 	state := memory_engine.New()
 	fun := func(activ engine_types.ActivatedActivity) error {
 		fmt.Println(activ.GetElement().GetName())
@@ -35,6 +35,26 @@ func TestExclusivelyGateway(t *testing.T) {
 	state.TaskHandlerManager().RegisterServiceTaskHandler("test1", fun)
 	state.TaskHandlerManager().RegisterServiceTaskHandler("test2", fun)
 	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/exclusively-gateway.bpmn", map[string]any{"v": v})
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
+}
+
+func TestParallelGateway(t *testing.T) {
+	v := 0
+	state := memory_engine.New()
+	fun := func(activ engine_types.ActivatedActivity) error {
+		fmt.Println(activ.GetElement().GetName())
+		return activ.Complete()
+	}
+	state.TaskHandlerManager().RegisterServiceTaskHandler("test0", fun)
+	state.TaskHandlerManager().RegisterServiceTaskHandler("test1", fun)
+	state.TaskHandlerManager().RegisterServiceTaskHandler("end1", func(activ engine_types.ActivatedActivity) error {
+		return activ.Complete()
+	})
+	state.TaskHandlerManager().RegisterServiceTaskHandler("end2", func(activ engine_types.ActivatedActivity) error {
+		return activ.Complete()
+	})
+	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/parallel-gateway.bpmn", map[string]any{"v": v})
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }

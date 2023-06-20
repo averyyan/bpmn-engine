@@ -18,5 +18,6 @@ type TProcess struct {
 	IntermediateCatchEvents []*event.TIntermediateCatchEvent `xml:"intermediateCatchEvent"` // 中间事件
 	SequenceFlows           []*flow.TSequenceFlow            `xml:"sequenceFlow"`           // 序列流
 	ServiceTasks            []*task.TServiceTask             `xml:"serviceTask"`            // 服务任务
-	ExclusiveGateways       []*gateway.TExclusiveGateway     `xml:"exclusiveGateway"`       // 独占路由
+	ExclusiveGateways       []*gateway.TExclusiveGateway     `xml:"exclusiveGateway"`       // 独占网关
+	ParallelGateways        []*gateway.TParallelGateway      `xml:"parallelGateway"`        // 并行网关
 }

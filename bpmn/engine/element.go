@@ -1,11 +1,11 @@
-package bpmn_util
+package engine
 
 import (
 	"github.com/averyyan/bpmn-engine/bpmn/sepc/definitions"
 	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
 )
 
-func MakeElementMap(definitions *definitions.TDefinitions) map[string]sepc_types.BaseElement {
+func makeElementMap(definitions *definitions.TDefinitions) map[string]sepc_types.BaseElement {
 	elementMap := make(map[string]sepc_types.BaseElement)
 	appender := func(element sepc_types.BaseElement) {
 		elementMap[element.GetID()] = element
@@ -22,14 +22,14 @@ func MakeElementMap(definitions *definitions.TDefinitions) map[string]sepc_types
 	for _, exclusiveGateway := range definitions.Process.ExclusiveGateways {
 		appender(exclusiveGateway)
 	}
+	for _, parallelGateway := range definitions.Process.ParallelGateways {
+		appender(parallelGateway)
+	}
 	// for _, task := range definitions.Process.CallActivitys {
 	// 	appender(task)
 	// }
 	// for _, task := range definitions.Process.UserTasks {
 	// 	appender(task)
-	// }
-	// for _, parallelGateway := range definitions.Process.ParallelGateway {
-	// 	appender(parallelGateway)
 	// }
 	// for _, intermediateCatchEvent := range definitions.Process.IntermediateCatchEvents {
 	// 	appender(intermediateCatchEvent)

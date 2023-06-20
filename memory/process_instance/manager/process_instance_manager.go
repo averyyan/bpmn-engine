@@ -49,7 +49,7 @@ func (manager *ProcessInstanceManager) SetFailed(ctx context.Context, pi engine_
 // 添加flowID到ScheduledFlows
 func (manager *ProcessInstanceManager) AppendScheduledFlows(ctx context.Context, pi engine_types.ProcessInstance, flowID string) error {
 	_pi := manager.pis[pi.GetKey()]
-	_pi.ScheduledFlows = bpmn_util.RemoveString(_pi.ScheduledFlows, flowID)
+	_pi.ScheduledFlows = append(_pi.ScheduledFlows, flowID)
 	return nil
 }
 
@@ -58,4 +58,16 @@ func (manager *ProcessInstanceManager) RemoveScheduledFlows(ctx context.Context,
 	_pi := manager.pis[pi.GetKey()]
 	_pi.ScheduledFlows = bpmn_util.RemoveString(_pi.ScheduledFlows, flowID)
 	return nil
+}
+
+// 判断是否存在
+func (manager *ProcessInstanceManager) HasScheduledFlow(ctx context.Context, pi engine_types.ProcessInstance, flowID string) bool {
+	_pi := manager.pis[pi.GetKey()]
+	return bpmn_util.ContainsString(_pi.ScheduledFlows, flowID)
+}
+
+// 获取
+func (manager *ProcessInstanceManager) GetScheduledFlows(ctx context.Context, pi engine_types.ProcessInstance) []string {
+	_pi := manager.pis[pi.GetKey()]
+	return _pi.ScheduledFlows
 }

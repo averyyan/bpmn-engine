@@ -6,10 +6,10 @@ import (
 
 // 并行网关
 type TParallelGateway struct {
-	ID                  string   `xml:"id,attr" bson:"id"`
-	Name                string   `xml:"name,attr" bson:"name"`
-	IncomingAssociation []string `xml:"incoming" bson:"incoming"`
-	OutgoingAssociation []string `xml:"outgoing" bson:"outgoing"`
+	ID                  string   `xml:"id,attr"`   // 元素ID
+	Name                string   `xml:"name,attr"` // 元素名称
+	IncomingAssociation []string `xml:"incoming"`  // 元素入Flow元素IDs
+	OutgoingAssociation []string `xml:"outgoing"`  // 元素出Flow元素IDs
 }
 
 func (parallelGateway *TParallelGateway) GetID() string {

@@ -7,6 +7,7 @@ import (
 
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
 	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
+	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 	sepc_pi_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/process_instance"
 )
 
@@ -29,7 +30,7 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 	if err != nil {
 		return err
 	}
-	// 内部元素队列
+	elementMap := makeElementMap(definitions)
 	type queueElement struct {
 		inboundFlowId string
 		baseElement   sepc_types.BaseElement
@@ -51,37 +52,42 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 	default:
 		return fmt.Errorf("未存在此流程实例状态")
 	}
-	// 循环元素队列直到完成 TODO:协程并行
 	for len(queue) > 0 {
-		baseElement := queue[0].baseElement
+		element := queue[0].baseElement
 		inboundFlowId := queue[0].inboundFlowId
-		// 核心函数 处理元素并且判断是否存在下一个元素
-		nextFlows, err := handleElement(ctx, state, pi, baseElement)
+		queue = queue[1:]
+		continueNextElement, err := handleElement(ctx, state, pi, element)
 		if err != nil {
 			return err
 		}
-		if len(nextFlows) > 0 {
+		if continueNextElement {
 			if inboundFlowId != "" {
 				if err := state.ProcessInstanceManager().RemoveScheduledFlows(ctx, pi, inboundFlowId); err != nil {
 					return err
 				}
 			}
-			for _, flow := range nextFlows {
-				if err := state.ProcessInstanceManager().AppendScheduledFlows(ctx, pi, flow.ID); err != nil {
-					return err
-				}
-				baseElements, err := pi.FindBaseElementsById(flow.TargetRef)
+			nextFlows := findSequenceFlows(definitions.Process.SequenceFlows, element.GetOutgoingAssociation())
+			if element.GetType() == sepc_element_types.ExclusiveGateway {
+				_nextFlows, err := exclusivelyFilterByConditionExpression(nextFlows, pi.GetVariables(), element.(sepc_types.ExclusiveGateway))
 				if err != nil {
 					return err
 				}
-				queue = append(queue, queueElement{
-					inboundFlowId: flow.ID,
-					baseElement:   baseElements,
-				})
+				nextFlows = _nextFlows
+			}
+			for _, nextFlow := range nextFlows {
+				if err := state.ProcessInstanceManager().AppendScheduledFlows(ctx, pi, nextFlow.ID); err != nil {
+					return err
+				}
+				if baseElement, ok := elementMap[nextFlow.TargetRef]; ok {
+					queue = append(queue, queueElement{
+						inboundFlowId: nextFlow.ID,
+						baseElement:   baseElement,
+					})
+				} else {
+					return fmt.Errorf("元素【%s】未找到", nextFlow.ID)
+				}
 			}
 		}
-		// 删除已处理元素
-		queue = queue[1:]
 	}
 	return nil
 }

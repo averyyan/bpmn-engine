@@ -1,17 +1,25 @@
 package engine
 
 import (
+	"context"
+
+	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
 	"github.com/averyyan/bpmn-engine/bpmn/sepc/flow"
 	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
 )
 
-// 独占网关处理
-func handleExclusiveGateway(
-	flows []*flow.TSequenceFlow,
-	variableContext map[string]interface{},
-	element sepc_types.ExclusiveGateway,
-) ([]*flow.TSequenceFlow, error) {
-	return exclusivelyFilterByConditionExpression(flows, variableContext, element)
+// 处理并行网关
+func handleParallelGateway(
+	ctx context.Context,
+	state engine_types.Engine,
+	pi engine_types.ProcessInstance,
+	baseElement sepc_types.BaseElement,
+) bool {
+	allInboundsAreScheduled := true
+	for _, inFlowId := range baseElement.GetIncomingAssociation() {
+		allInboundsAreScheduled = state.ProcessInstanceManager().HasScheduledFlow(ctx, pi, inFlowId) && allInboundsAreScheduled
+	}
+	return allInboundsAreScheduled
 }
 
 // 通过序列流上的表达式过滤

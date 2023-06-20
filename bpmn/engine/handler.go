@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
-	"github.com/averyyan/bpmn-engine/bpmn/sepc/flow"
 	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
 	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 )
@@ -16,34 +15,21 @@ func handleElement(
 	state engine_types.Engine,
 	pi engine_types.ProcessInstance,
 	baseElement sepc_types.BaseElement,
-) ([]*flow.TSequenceFlow, error) {
-	fmt.Println("正在运行", baseElement.GetName()) // debug
-	definitions, err := pi.GetDefinitions()
-	if err != nil {
-		return nil, err
-	}
-	nextFlows := findSequenceFlows(definitions.Process.SequenceFlows, baseElement.GetOutgoingAssociation())
+) (bool, error) {
+	fmt.Println("正在运行", baseElement.GetName())
 	switch baseElement.GetType() {
 	case sepc_element_types.StartEvent:
+		return true, nil
 	case sepc_element_types.EndEvent:
 		if err := handleEndEvent(ctx, state, pi); err != nil {
-			return nil, err
+			return false, err
 		}
-		if len(nextFlows) > 0 {
-			return nil, fmt.Errorf("结束事件后不应有继续事件,请检查流程详情")
-		}
+		return false, nil
+	case sepc_element_types.ParallelGateway:
+		return handleParallelGateway(ctx, state, pi, baseElement), nil
 	case sepc_element_types.ServiceTask:
-		if err := handleServiceTask(ctx, state, pi, baseElement.(sepc_types.ServiceTaskElement)); err != nil {
-			return nil, err
-		}
-	case sepc_element_types.ExclusiveGateway:
-		_nextFlows, err := handleExclusiveGateway(nextFlows, pi.GetVariables(), baseElement.(sepc_types.ExclusiveGateway))
-		if err != nil {
-			return nil, err
-		}
-		nextFlows = _nextFlows
+		return handleServiceTask(ctx, state, pi, baseElement.(sepc_types.ServiceTaskElement))
 	default:
-		return nil, fmt.Errorf("未支持元素")
+		return true, nil
 	}
-	return nextFlows, nil
 }

@@ -2,14 +2,17 @@ package engine
 
 import (
 	"context"
-	"fmt"
 
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
 	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 )
 
 // 处理EndEvent元素
-func handleEndEvent(ctx context.Context, state engine_types.Engine, pi engine_types.ProcessInstance) error {
+func handleEndEvent(
+	ctx context.Context,
+	state engine_types.Engine,
+	pi engine_types.ProcessInstance,
+) error {
 	// 检查未完成的任务
 	activs, err := state.ActivityManager().FindByStates(
 		ctx, pi,
@@ -21,12 +24,11 @@ func handleEndEvent(ctx context.Context, state engine_types.Engine, pi engine_ty
 	if err != nil {
 		return err
 	}
+	// 判断流程是否完结
 	if len(activs) > 0 {
-		if err := state.ProcessInstanceManager().SetFailed(ctx, pi); err != nil {
-			return err
-		}
-		return fmt.Errorf("存在未完成任务,请检查流程逻辑")
+		return nil
 	}
+	// 流程已经完结
 	if err := state.ProcessInstanceManager().SetCompleted(ctx, pi); err != nil {
 		return err
 	}
