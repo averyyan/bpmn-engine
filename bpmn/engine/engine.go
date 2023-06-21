@@ -24,6 +24,42 @@ func CreateInstanceByFileAndRun(ctx context.Context, state engine_types.Engine, 
 	return pi, run(ctx, state, pi)
 }
 
+func PublishEventForInstanceAndRun(
+	ctx context.Context,
+	state engine_types.Engine,
+	piKey string,
+	messageName string,
+	variables map[string]any,
+) (engine_types.ProcessInstance, error) {
+	pi, err := state.ProcessInstanceManager().FindOneByKey(ctx, piKey)
+	if err != nil {
+		return nil, err
+	}
+	switch pi.GetState() {
+	case sepc_pi_types.Completed:
+		return nil, fmt.Errorf("流程Key【%s】已完成", pi.GetKey())
+	}
+	definitions, err := pi.GetDefinitions()
+	if err != nil {
+		return nil, err
+	}
+	// 找到 message
+	for _, msg := range definitions.Messages {
+		if msg.Name == messageName {
+			if _, err := state.MessageSubscriptionManager().Create(
+				ctx,
+				pi,
+				variables,
+				msg,
+			); err != nil {
+				return nil, err
+			}
+			return pi, run(ctx, state, pi)
+		}
+	}
+	return nil, fmt.Errorf("创建消息订阅失败")
+}
+
 // 流程运行核心
 func run(ctx context.Context, state engine_types.Engine, pi engine_types.ProcessInstance) error {
 	definitions, err := pi.GetDefinitions()
@@ -48,6 +84,18 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 		// 设置流程实例为激活状态
 		if err := state.ProcessInstanceManager().SetActive(ctx, pi); err != nil {
 			return err
+		}
+	case sepc_pi_types.Active:
+		//
+		intermediateCatchEvents, err := findIntermediateCatchEventsForContinuation(ctx, state, pi)
+		if err != nil {
+			return err
+		}
+		for _, ice := range intermediateCatchEvents {
+			queue = append(queue, queueElement{
+				inboundFlowId: "",
+				baseElement:   ice,
+			})
 		}
 	default:
 		return fmt.Errorf("未存在此流程实例状态")
@@ -90,4 +138,29 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 		}
 	}
 	return nil
+}
+
+func findIntermediateCatchEventsForContinuation(ctx context.Context, state engine_types.Engine, pi engine_types.ProcessInstance) ([]sepc_types.BaseElement, error) {
+	var events []sepc_types.BaseElement
+	definitions, err := pi.GetDefinitions()
+	if err != nil {
+		return nil, err
+	}
+	msgIces, err := state.ICEManager().FindMsgICEByStates(ctx, pi, []sepc_element_types.LifecycleState{sepc_element_types.Active})
+	if err != nil {
+		return nil, err
+	}
+	for _, ice := range definitions.Process.IntermediateCatchEvents {
+		for _, msgIce := range msgIces {
+			if ice.ID == msgIce.GetElementID() {
+				msgID := ice.GetMessageEventDefinition().GetMessageRef()
+				for _, message := range definitions.Messages {
+					if message.ID == msgID {
+						events = append(events, ice)
+					}
+				}
+			}
+		}
+	}
+	return events, nil
 }

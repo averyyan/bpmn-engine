@@ -2,12 +2,12 @@ package memory_process_instance_manager
 
 import (
 	"context"
+	"fmt"
 
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
 	sepc_pi_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/process_instance"
 	bpmn_util "github.com/averyyan/bpmn-engine/bpmn/util"
 	memory_process_instance "github.com/averyyan/bpmn-engine/memory/process_instance"
-	"github.com/segmentio/ksuid"
 )
 
 func New() *ProcessInstanceManager {
@@ -21,11 +21,20 @@ type ProcessInstanceManager struct {
 	pis map[string]*memory_process_instance.ProcessInstance // 内存流程实例Map
 }
 
+// 通过Key找到流程实例
+func (manager *ProcessInstanceManager) FindOneByKey(ctx context.Context, piKey string) (engine_types.ProcessInstance, error) {
+	if pi, ok := manager.pis[piKey]; ok {
+		return pi, nil
+	} else {
+		return nil, fmt.Errorf("未存在Key【%s】的流程实例", piKey)
+	}
+}
+
 // 创建流程实例 ctx 上下文用于未来事务 raw 流程文件数据流 variables 实例上下文
 func (manager *ProcessInstanceManager) Create(ctx context.Context, raw []byte, variables map[string]any) (engine_types.ProcessInstance, error) {
-	key := ksuid.New().String()
-	manager.pis[key] = memory_process_instance.New(key, raw, variables)
-	return manager.pis[key], nil
+	pi := memory_process_instance.New(raw, variables)
+	manager.pis[pi.GetKey()] = pi
+	return pi, nil
 }
 
 // 设置流程实例为激活状态

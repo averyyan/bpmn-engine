@@ -4,12 +4,13 @@ import (
 	"github.com/averyyan/bpmn-engine/bpmn/sepc/definitions"
 	sepc_pi_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/process_instance"
 	bpmn_util "github.com/averyyan/bpmn-engine/bpmn/util"
+	"github.com/segmentio/ksuid"
 )
 
-func New(key string, raw []byte, variables map[string]any) *ProcessInstance {
+func New(raw []byte, variables map[string]any) *ProcessInstance {
 	return &ProcessInstance{
 		state:          sepc_pi_types.Ready,
-		key:            key,
+		key:            ksuid.New().String(),
 		raw:            raw,
 		variables:      variables,
 		ScheduledFlows: make([]string, 0),

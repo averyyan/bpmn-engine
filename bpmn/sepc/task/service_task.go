@@ -2,6 +2,7 @@ package task
 
 import (
 	"github.com/averyyan/bpmn-engine/bpmn/sepc/extensions"
+	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
 	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 )
 
@@ -11,7 +12,7 @@ type TServiceTask struct {
 	IncomingAssociation []string                   `xml:"incoming"`                              // 元素入Flow元素IDs
 	OutgoingAssociation []string                   `xml:"outgoing"`                              // 元素出Flow元素IDs
 	TaskDefinition      extensions.TTaskDefinition `xml:"extensionElements>taskDefinition"`      // Service Task定义
-	Properties          []extensions.TPropertie    `xml:"extensionElements>properties>property"` // 扩展数据
+	Properties          []*extensions.TPropertie   `xml:"extensionElements>properties>property"` // 扩展数据
 }
 
 func (serviceTask *TServiceTask) GetID() string {
@@ -38,12 +39,10 @@ func (serviceTask *TServiceTask) GetTaskDefinitionType() string {
 	return serviceTask.TaskDefinition.TypeName
 }
 
-func (serviceTask *TServiceTask) GetProperties() map[string]string {
-	m := make(map[string]string)
-	if serviceTask.Properties != nil {
-		for _, property := range serviceTask.Properties {
-			m[property.Name] = property.Value
-		}
+func (serviceTask *TServiceTask) GetProperties() []sepc_types.Propertie {
+	var properties []sepc_types.Propertie
+	for _, v := range serviceTask.Properties {
+		properties = append(properties, v)
 	}
-	return m
+	return properties
 }

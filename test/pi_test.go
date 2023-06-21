@@ -58,3 +58,18 @@ func TestParallelGateway(t *testing.T) {
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }
+
+func TestMsgEvent(t *testing.T) {
+	state := memory_engine.New()
+	fun := func(activ engine_types.ActivatedActivity) error {
+		fmt.Println(activ.GetElement().GetName())
+		return activ.Complete()
+	}
+	state.TaskHandlerManager().RegisterServiceTaskHandler("test", fun)
+	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/msg-event.bpmn", nil)
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Active))
+	pi, err = engine.PublishEventForInstanceAndRun(context.Background(), state, pi.GetKey(), "test", nil)
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
+}

@@ -16,7 +16,7 @@ func handleElement(
 	pi engine_types.ProcessInstance,
 	baseElement sepc_types.BaseElement,
 ) (bool, error) {
-	fmt.Println("正在运行", baseElement.GetName())
+	fmt.Println("正在运行", baseElement.GetName()) // debug
 	switch baseElement.GetType() {
 	case sepc_element_types.StartEvent:
 		return true, nil
@@ -25,11 +25,17 @@ func handleElement(
 			return false, err
 		}
 		return false, nil
+	case sepc_element_types.ExclusiveGateway:
+		return true, nil
+	case sepc_element_types.EventBasedGateway:
+		return true, nil
 	case sepc_element_types.ParallelGateway:
 		return handleParallelGateway(ctx, state, pi, baseElement), nil
+	case sepc_element_types.IntermediateCatchEvent:
+		return handleIntermediateCatchEvent(ctx, state, pi, baseElement.(sepc_types.IntermediateCatchEvent))
 	case sepc_element_types.ServiceTask:
 		return handleServiceTask(ctx, state, pi, baseElement.(sepc_types.ServiceTaskElement))
 	default:
-		return true, nil
+		return false, fmt.Errorf("元素【%s】未被支持", baseElement.GetType())
 	}
 }

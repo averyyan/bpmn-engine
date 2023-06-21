@@ -1,7 +1,11 @@
 package event
 
-import sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
+import (
+	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
+	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
+)
 
+// ice *TIntermediateCatchEvent github.com/averyyan/bpmn-engine/bpmn/sepc/types.IntermediateCatchEvent
 type TIntermediateCatchEvent struct {
 	ID                     string                   `xml:"id,attr"`                // 元素ID
 	Name                   string                   `xml:"name,attr"`              // 元素名称
@@ -9,6 +13,34 @@ type TIntermediateCatchEvent struct {
 	OutgoingAssociation    []string                 `xml:"outgoing"`               // 元素出Flow元素IDs
 	MessageEventDefinition *TMessageEventDefinition `xml:"messageEventDefinition"` // 基于消息中间件内容
 	TimerEventDefinition   *TTimerEventDefinition   `xml:"timerEventDefinition"`   // 基于时间中间件内容
+}
+
+func (ice *TIntermediateCatchEvent) GetID() string {
+	return ice.ID
+}
+
+func (ice *TIntermediateCatchEvent) GetName() string {
+	return ice.Name
+}
+
+func (ice *TIntermediateCatchEvent) GetIncomingAssociation() []string {
+	return ice.IncomingAssociation
+}
+
+func (ice *TIntermediateCatchEvent) GetOutgoingAssociation() []string {
+	return ice.OutgoingAssociation
+}
+
+func (ice *TIntermediateCatchEvent) GetType() sepc_element_types.ElementType {
+	return sepc_element_types.IntermediateCatchEvent
+}
+
+func (ice *TIntermediateCatchEvent) GetMessageEventDefinition() sepc_types.MessageEventDefinition {
+	return ice.MessageEventDefinition
+}
+
+func (ice *TIntermediateCatchEvent) GetTimerEventDefinition() sepc_types.TimerEventDefinition {
+	return ice.TimerEventDefinition
 }
 
 type TMessageEventDefinition struct {
@@ -34,11 +66,11 @@ func (ted *TTimerEventDefinition) GetID() string {
 	return ted.ID
 }
 
-func (ted *TTimerEventDefinition) GetTimeDuration() *TTimeDuration {
+func (ted *TTimerEventDefinition) GetTimeDuration() sepc_types.BaseElementText {
 	return ted.TimeDuration
 }
 
-func (ted *TTimerEventDefinition) GetTimeDate() *TTimeDate {
+func (ted *TTimerEventDefinition) GetTimeDate() sepc_types.BaseElementText {
 	return ted.TimeDate
 }
 
@@ -56,32 +88,4 @@ type TTimeDate struct {
 
 func (td *TTimeDate) GetText() string {
 	return td.XMLText
-}
-
-func (ice *TIntermediateCatchEvent) GetID() string {
-	return ice.ID
-}
-
-func (ice *TIntermediateCatchEvent) GetName() string {
-	return ice.Name
-}
-
-func (ice *TIntermediateCatchEvent) GetIncomingAssociation() []string {
-	return ice.IncomingAssociation
-}
-
-func (ice *TIntermediateCatchEvent) GetOutgoingAssociation() []string {
-	return ice.OutgoingAssociation
-}
-
-func (intermediateCatchEvent *TIntermediateCatchEvent) GetType() sepc_element_types.ElementType {
-	return sepc_element_types.IntermediateCatchEvent
-}
-
-func (ice *TIntermediateCatchEvent) GetMessageEventDefinition() *TMessageEventDefinition {
-	return ice.MessageEventDefinition
-}
-
-func (ice *TIntermediateCatchEvent) GetTimerEventDefinition() *TTimerEventDefinition {
-	return ice.TimerEventDefinition
 }

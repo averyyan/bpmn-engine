@@ -4,10 +4,10 @@ import sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/eleme
 
 // 消息事件网关
 type TEventBasedGateway struct {
-	ID                  string   `xml:"id,attr" bson:"id"`
-	Name                string   `xml:"name,attr" bson:"name"`
-	IncomingAssociation []string `xml:"incoming" bson:"incoming"`
-	OutgoingAssociation []string `xml:"outgoing" bson:"outgoing"`
+	ID                  string   `xml:"id,attr"`   // 元素ID
+	Name                string   `xml:"name,attr"` // 元素名称
+	IncomingAssociation []string `xml:"incoming"`  // 元素入Flow元素IDs
+	OutgoingAssociation []string `xml:"outgoing"`  // 元素出Flow元素IDs
 }
 
 func (eventBasedGateway *TEventBasedGateway) GetID() string {

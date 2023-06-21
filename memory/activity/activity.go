@@ -11,11 +11,12 @@ import (
 
 func New(pi engine_types.ProcessInstance, baseElement sepc_types.BaseElement) *Activity {
 	return &Activity{
-		elementID:   baseElement.GetID(),
-		elementName: baseElement.GetName(),
-		key:         ksuid.New().String(),
-		createTime:  time.Now().Local(),
-		state:       sepc_element_types.Ready,
+		elementID:          baseElement.GetID(),
+		elementName:        baseElement.GetName(),
+		key:                ksuid.New().String(),
+		processInstanceKey: pi.GetKey(),
+		createTime:         time.Now().Local(),
+		state:              sepc_element_types.Ready,
 	}
 }
 

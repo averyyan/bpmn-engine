@@ -7,7 +7,7 @@ type ServiceTaskElement interface {
 	// 获取任务类型
 	GetTaskDefinitionType() string
 	// 获取外部数据
-	GetProperties() map[string]string
+	GetProperties() []Propertie
 }
 
 // 任务元素接口
