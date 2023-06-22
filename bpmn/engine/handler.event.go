@@ -21,6 +21,7 @@ func handleIntermediateCatchEvent(
 	return false, fmt.Errorf("未支持此类型事件")
 }
 
+// 中间事件元素处理
 func handleIntermediateMessageCatchEvent(
 	ctx context.Context,
 	state engine_types.Engine,
@@ -29,7 +30,7 @@ func handleIntermediateMessageCatchEvent(
 ) (bool, error) {
 	var ice engine_types.IntermediateCatchEvent
 	var err error
-	// 找到激活的消息
+	// 找到或者创建激活的消息
 	if ice, err = state.ICEManager().FindOneMsgICEByStateAndID(
 		ctx, pi, sepc_element_types.Active, iceElement.GetID(),
 	); err != nil {
@@ -39,12 +40,13 @@ func handleIntermediateMessageCatchEvent(
 		}
 	}
 	// 通过ice信息找到订阅消息
-	msgsub, err := findMatchingCaughtEvent(ctx, state, pi, iceElement)
-	if err == nil {
-		if err := state.ICEManager().SetCompleted(ctx, ice); err != nil {
+	msgsub, _ := findMatchingMessageSubscription(ctx, state, pi, iceElement)
+	// 如果存在对应的消息订阅则将订阅消费掉，并将ice设置为完成状态
+	if msgsub != nil {
+		if err := state.MessageSubscriptionManager().SetConsumed(ctx, pi, msgsub, true); err != nil {
 			return false, err
 		}
-		if err := state.MessageSubscriptionManager().SetConsumed(ctx, pi, msgsub, true); err != nil {
+		if err := state.ICEManager().SetCompleted(ctx, ice); err != nil {
 			return false, err
 		}
 		return true, nil
@@ -52,7 +54,13 @@ func handleIntermediateMessageCatchEvent(
 	return false, nil
 }
 
-func findMatchingCaughtEvent(ctx context.Context, state engine_types.Engine, pi engine_types.ProcessInstance, ice sepc_types.IntermediateCatchEvent) (engine_types.MessageSubscription, error) {
+// 找到消息元素对应的消息订阅
+func findMatchingMessageSubscription(
+	ctx context.Context,
+	state engine_types.Engine,
+	pi engine_types.ProcessInstance,
+	ice sepc_types.IntermediateCatchEvent,
+) (engine_types.MessageSubscription, error) {
 	msg, err := findMessageById(pi, ice.GetMessageEventDefinition().GetMessageRef())
 	if err != nil {
 		return nil, err
@@ -64,6 +72,7 @@ func findMatchingCaughtEvent(ctx context.Context, state engine_types.Engine, pi 
 	return msgsub, nil
 }
 
+// 通过消息ID找到消息
 func findMessageById(pi engine_types.ProcessInstance, msgID string) (sepc_types.Message, error) {
 	definitions, err := pi.GetDefinitions()
 	if err != nil {

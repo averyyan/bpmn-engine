@@ -24,6 +24,7 @@ func CreateInstanceByFileAndRun(ctx context.Context, state engine_types.Engine, 
 	return pi, run(ctx, state, pi)
 }
 
+// 基于消息名称对流程进行重启
 func PublishEventForInstanceAndRun(
 	ctx context.Context,
 	state engine_types.Engine,
@@ -43,7 +44,7 @@ func PublishEventForInstanceAndRun(
 	if err != nil {
 		return nil, err
 	}
-	// 找到 message
+	// 创建新的消息订阅
 	for _, msg := range definitions.Messages {
 		if msg.Name == messageName {
 			if _, err := state.MessageSubscriptionManager().Create(

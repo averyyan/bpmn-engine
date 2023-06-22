@@ -25,6 +25,9 @@ func makeElementMap(definitions *definitions.TDefinitions) map[string]sepc_types
 	for _, parallelGateway := range definitions.Process.ParallelGateways {
 		appender(parallelGateway)
 	}
+	for _, eventBasedGateway := range definitions.Process.EventBasedGateways {
+		appender(eventBasedGateway)
+	}
 	for _, intermediateCatchEvent := range definitions.Process.IntermediateCatchEvents {
 		appender(intermediateCatchEvent)
 	}
@@ -33,9 +36,6 @@ func makeElementMap(definitions *definitions.TDefinitions) map[string]sepc_types
 	// }
 	// for _, task := range definitions.Process.UserTasks {
 	// 	appender(task)
-	// }
-	// for _, eventBasedGateway := range definitions.Process.EventBasedGateways {
-	// 	appender(eventBasedGateway)
 	// }
 	return elementMap
 }
