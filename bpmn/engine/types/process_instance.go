@@ -10,7 +10,7 @@ import (
 // 流程实例管理接口
 type ProcessInstanceManager interface {
 	// 创建流程实例 ctx 上下文用于未来事务 raw 流程文件数据流 variables 实例上下文
-	Create(ctx context.Context, raw []byte, variables map[string]any) (ProcessInstance, error)
+	Create(ctx context.Context, raw []byte, piKey string, variables map[string]any) (ProcessInstance, error)
 	// 通过Key找到流程实例
 	FindOneByKey(ctx context.Context, piKey string) (ProcessInstance, error)
 	// 设置流程实例为激活状态
@@ -37,9 +37,8 @@ type ProcessInstance interface {
 	GetState() sepc_pi_types.State
 	// 获取流程详情
 	GetDefinitions() (*definitions.TDefinitions, error)
-	// 通过元素ID获取流程实例中元素
-	// FindBaseElementsById(id string) (sepc_types.BaseElement, error)
-	// GetElementMap() (map[string]sepc_types.BaseElement, error)
 	// 获取流程实例全局上下文
 	GetVariables() map[string]any
+	// 获取父级流程实例Key
+	GetParentProcessInstanceKey() string
 }

@@ -1,5 +1,10 @@
 package sepc_types
 
 type CallActivity interface {
-	BaseElement
+	HasCalledElement() bool
+	GetCalledElement() CalledElement
+}
+
+type CalledElement interface {
+	GetProcessID() string
 }

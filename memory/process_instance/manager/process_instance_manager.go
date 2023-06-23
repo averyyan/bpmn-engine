@@ -31,8 +31,8 @@ func (manager *ProcessInstanceManager) FindOneByKey(ctx context.Context, piKey s
 }
 
 // 创建流程实例 ctx 上下文用于未来事务 raw 流程文件数据流 variables 实例上下文
-func (manager *ProcessInstanceManager) Create(ctx context.Context, raw []byte, variables map[string]any) (engine_types.ProcessInstance, error) {
-	pi := memory_process_instance.New(raw, variables)
+func (manager *ProcessInstanceManager) Create(ctx context.Context, raw []byte, piKey string, variables map[string]any) (engine_types.ProcessInstance, error) {
+	pi := memory_process_instance.New(raw, piKey, variables)
 	manager.pis[pi.GetKey()] = pi
 	return pi, nil
 }

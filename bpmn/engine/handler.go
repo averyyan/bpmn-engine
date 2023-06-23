@@ -34,7 +34,9 @@ func handleElement(
 	case sepc_element_types.IntermediateCatchEvent:
 		return handleIntermediateCatchEvent(ctx, state, pi, baseElement.(sepc_types.IntermediateCatchEvent))
 	case sepc_element_types.ServiceTask:
-		return handleServiceTask(ctx, state, pi, baseElement.(sepc_types.ServiceTaskElement))
+		return handleServiceTask(ctx, state, pi, baseElement.(sepc_types.ServiceTask))
+	case sepc_element_types.CallActivity:
+		return handleCallActivity(ctx, state, pi, baseElement.(sepc_types.CallActivity))
 	default:
 		return false, fmt.Errorf("元素【%s】未被支持", baseElement.GetType())
 	}

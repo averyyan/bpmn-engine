@@ -7,8 +7,10 @@ type BaseElement interface {
 	GetID() string                           // 获取元素ID
 	GetName() string                         // 获取元素名称
 	GetType() sepc_element_types.ElementType // 获取元素类型
+	GetDocumentation() string                // 获取元素说明
 	GetIncomingAssociation() []string        // 获取元素入Flow元素IDs
 	GetOutgoingAssociation() []string        // 获取元素出Flow元素IDs
+	GetProperties() []Propertie              // 获取外部数据
 }
 
 // 元素获取XML内容接口

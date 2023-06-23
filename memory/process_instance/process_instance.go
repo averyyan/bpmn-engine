@@ -7,13 +7,14 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-func New(raw []byte, variables map[string]any) *ProcessInstance {
+func New(raw []byte, pikey string, variables map[string]any) *ProcessInstance {
 	return &ProcessInstance{
-		state:          sepc_pi_types.Ready,
-		key:            ksuid.New().String(),
-		raw:            raw,
-		variables:      variables,
-		ScheduledFlows: make([]string, 0),
+		state:                    sepc_pi_types.Ready,
+		key:                      ksuid.New().String(),
+		raw:                      raw,
+		variables:                variables,
+		ScheduledFlows:           make([]string, 0),
+		parentProcessInstanceKey: pikey,
 	}
 }
 
@@ -30,7 +31,8 @@ type ProcessInstance struct {
 	// 流程实例内容
 	definitions *definitions.TDefinitions
 	// 流程序列流
-	ScheduledFlows []string
+	ScheduledFlows           []string
+	parentProcessInstanceKey string
 }
 
 // 获取流程实例全局上下文
@@ -62,4 +64,9 @@ func (pi *ProcessInstance) GetDefinitions() (*definitions.TDefinitions, error) {
 		pi.definitions = definitions
 	}
 	return pi.definitions, nil
+}
+
+// 获取父级流程实例Key
+func (pi *ProcessInstance) GetParentProcessInstanceKey() string {
+	return pi.parentProcessInstanceKey
 }

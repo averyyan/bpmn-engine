@@ -9,7 +9,7 @@ import (
 type activatedActivity struct {
 	pi              engine_types.ProcessInstance
 	activ           engine_types.Activity
-	baseElement     sepc_types.ServiceTaskElement
+	baseElement     sepc_types.BaseElement
 	completeHandler func() error
 	failHandler     func(reason string) error
 }
@@ -23,8 +23,8 @@ func (activ *activatedActivity) GetActivity() engine_types.Activity {
 	return activ.activ
 }
 
-func (activ *activatedActivity) GetElement() sepc_types.ServiceTaskElement {
-	return activ.baseElement
+func (activ *activatedActivity) GetElement() sepc_types.ServiceTask {
+	return activ.baseElement.(sepc_types.ServiceTask)
 }
 
 func (activ *activatedActivity) Fail(reason string) error {

@@ -12,16 +12,71 @@ import (
 )
 
 // 根据BPMN文件地址创建流程实例
-func CreateInstanceByFileAndRun(ctx context.Context, state engine_types.Engine, filepath string, variables map[string]any) (engine_types.ProcessInstance, error) {
+func CreateInstanceByFileAndRun(
+	ctx context.Context,
+	state engine_types.Engine,
+	filepath string,
+	variables map[string]any,
+) (engine_types.ProcessInstance, error) {
 	raw, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, err
 	}
-	pi, err := state.ProcessInstanceManager().Create(ctx, raw, variables)
+	process, err := state.ProcessManager().Create(ctx, raw)
+	if err != nil {
+		return nil, err
+	}
+	pi, err := state.ProcessInstanceManager().Create(ctx, process.GetRaw(), "", variables)
 	if err != nil {
 		return nil, err
 	}
 	return pi, run(ctx, state, pi)
+}
+
+// 继续流程实例
+func ContinueProcessInstance(
+	ctx context.Context,
+	state engine_types.Engine,
+	piKey string,
+) (engine_types.ProcessInstance, error) {
+	pi, err := state.ProcessInstanceManager().FindOneByKey(ctx, piKey)
+	if err != nil {
+		return nil, err
+	}
+	return pi, run(ctx, state, pi)
+}
+
+// 创建子流程
+func createChildInstance(
+	ctx context.Context,
+	state engine_types.Engine,
+	pi engine_types.ProcessInstance,
+	callActivityElement sepc_types.CallActivity,
+) (engine_types.BaseElement, error) {
+	if !callActivityElement.HasCalledElement() {
+		return nil, fmt.Errorf("未存在子流程信息")
+	}
+	cactiv, err := state.CallActivityManager().(engine_types.BaseManager).Create(
+		ctx, pi, callActivityElement.(sepc_types.BaseElement),
+	)
+	if err != nil {
+		return nil, err
+	}
+	process, err := state.ProcessManager().FindOneByID(ctx, callActivityElement.GetCalledElement().GetProcessID())
+	if err != nil {
+		return nil, err
+	}
+	childPI, err := state.ProcessInstanceManager().Create(ctx, process.GetRaw(), pi.GetKey(), pi.GetVariables())
+	if err != nil {
+		return nil, err
+	}
+	if err := state.CallActivityManager().(engine_types.BaseManager).SetActive(ctx, cactiv); err != nil {
+		return nil, err
+	}
+	if err := state.CallActivityManager().SetChildPIKey(ctx, cactiv, childPI.GetKey()); err != nil {
+		return nil, err
+	}
+	return cactiv, nil
 }
 
 // 基于消息名称对流程进行重启
@@ -87,7 +142,18 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 			return err
 		}
 	case sepc_pi_types.Active:
-		//
+		// 找到未完成的子流程
+		cactivs, err := findCallActivitysForContinuation(ctx, state, pi)
+		if err != nil {
+			return err
+		}
+		for _, cactiv := range cactivs {
+			queue = append(queue, queueElement{
+				inboundFlowId: "",
+				baseElement:   cactiv,
+			})
+		}
+		// 找到未完成的中间事件
 		intermediateCatchEvents, err := findIntermediateCatchEventsForContinuation(ctx, state, pi)
 		if err != nil {
 			return err
@@ -98,6 +164,9 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 				baseElement:   ice,
 			})
 		}
+	case sepc_pi_types.Completed:
+	case sepc_pi_types.Failed:
+
 	default:
 		return fmt.Errorf("未存在此流程实例状态")
 	}
@@ -141,13 +210,43 @@ func run(ctx context.Context, state engine_types.Engine, pi engine_types.Process
 	return nil
 }
 
+func findCallActivitysForContinuation(
+	ctx context.Context,
+	state engine_types.Engine,
+	pi engine_types.ProcessInstance,
+) ([]sepc_types.BaseElement, error) {
+	var baseElements []sepc_types.BaseElement
+	definitions, err := pi.GetDefinitions()
+	if err != nil {
+		return nil, err
+	}
+	cacitvs, err := state.CallActivityManager().(engine_types.BaseManager).FindByStates(
+		ctx, pi,
+		[]sepc_element_types.LifecycleState{sepc_element_types.Ready, sepc_element_types.Active},
+	)
+	if err != nil {
+		return nil, err
+	}
+	for _, cacitv := range cacitvs {
+		for _, callactivityElement := range definitions.Process.CallActivitys {
+			if callactivityElement.GetID() == cacitv.GetElementID() {
+				baseElements = append(baseElements, callactivityElement)
+			}
+		}
+	}
+	return baseElements, nil
+}
+
 func findIntermediateCatchEventsForContinuation(ctx context.Context, state engine_types.Engine, pi engine_types.ProcessInstance) ([]sepc_types.BaseElement, error) {
 	var events []sepc_types.BaseElement
 	definitions, err := pi.GetDefinitions()
 	if err != nil {
 		return nil, err
 	}
-	msgIces, err := state.ICEManager().FindMsgICEByStates(ctx, pi, []sepc_element_types.LifecycleState{sepc_element_types.Active})
+	msgIces, err := state.ICEManager().(engine_types.BaseManager).FindByStates(
+		ctx, pi,
+		[]sepc_element_types.LifecycleState{sepc_element_types.Active},
+	)
 	if err != nil {
 		return nil, err
 	}

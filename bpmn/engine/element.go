@@ -31,9 +31,9 @@ func makeElementMap(definitions *definitions.TDefinitions) map[string]sepc_types
 	for _, intermediateCatchEvent := range definitions.Process.IntermediateCatchEvents {
 		appender(intermediateCatchEvent)
 	}
-	// for _, task := range definitions.Process.CallActivitys {
-	// 	appender(task)
-	// }
+	for _, call_activity := range definitions.Process.CallActivitys {
+		appender(call_activity)
+	}
 	// for _, task := range definitions.Process.UserTasks {
 	// 	appender(task)
 	// }

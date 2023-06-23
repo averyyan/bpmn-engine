@@ -1,13 +1,28 @@
 package gateway
 
-import sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
+import (
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/extensions"
+	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
+	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
+)
 
 // 消息事件网关
+// eventBasedGateway *TEventBasedGateway github.com/averyyan/bpmn-engine/bpmn/sepc/types.BaseElement
 type TEventBasedGateway struct {
-	ID                  string   `xml:"id,attr"`   // 元素ID
-	Name                string   `xml:"name,attr"` // 元素名称
-	IncomingAssociation []string `xml:"incoming"`  // 元素入Flow元素IDs
-	OutgoingAssociation []string `xml:"outgoing"`  // 元素出Flow元素IDs
+	ID                  string                   `xml:"id,attr"`                               // 元素ID
+	Name                string                   `xml:"name,attr"`                             // 元素名称
+	Documentation       string                   `xml:"documentation,attr"`                    // 元素说明
+	IncomingAssociation []string                 `xml:"incoming"`                              // 元素入Flow元素IDs
+	OutgoingAssociation []string                 `xml:"outgoing"`                              // 元素出Flow元素IDs
+	Properties          []*extensions.TPropertie `xml:"extensionElements>properties>property"` // 扩展数据
+}
+
+func (eventBasedGateway *TEventBasedGateway) GetDocumentation() string {
+	return eventBasedGateway.Documentation
+}
+
+func (eventBasedGateway *TEventBasedGateway) GetProperties() []sepc_types.Propertie {
+	return extensions.Properties2Interface(eventBasedGateway.Properties)
 }
 
 func (eventBasedGateway *TEventBasedGateway) GetID() string {

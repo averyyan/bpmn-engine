@@ -1,18 +1,30 @@
 package event
 
 import (
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/extensions"
 	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
 	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 )
 
 // ice *TIntermediateCatchEvent github.com/averyyan/bpmn-engine/bpmn/sepc/types.IntermediateCatchEvent
+// ice *TIntermediateCatchEvent github.com/averyyan/bpmn-engine/bpmn/sepc/types.BaseElement
 type TIntermediateCatchEvent struct {
-	ID                     string                   `xml:"id,attr"`                // 元素ID
-	Name                   string                   `xml:"name,attr"`              // 元素名称
-	IncomingAssociation    []string                 `xml:"incoming"`               // 元素入Flow元素IDs
-	OutgoingAssociation    []string                 `xml:"outgoing"`               // 元素出Flow元素IDs
-	MessageEventDefinition *TMessageEventDefinition `xml:"messageEventDefinition"` // 基于消息中间件内容
-	TimerEventDefinition   *TTimerEventDefinition   `xml:"timerEventDefinition"`   // 基于时间中间件内容
+	ID                     string                   `xml:"id,attr"`                               // 元素ID
+	Name                   string                   `xml:"name,attr"`                             // 元素名称
+	Documentation          string                   `xml:"documentation,attr"`                    // 元素说明
+	IncomingAssociation    []string                 `xml:"incoming"`                              // 元素入Flow元素IDs
+	OutgoingAssociation    []string                 `xml:"outgoing"`                              // 元素出Flow元素IDs
+	Properties             []*extensions.TPropertie `xml:"extensionElements>properties>property"` // 扩展数据
+	MessageEventDefinition *TMessageEventDefinition `xml:"messageEventDefinition"`                // 基于消息中间件内容
+	TimerEventDefinition   *TTimerEventDefinition   `xml:"timerEventDefinition"`                  // 基于时间中间件内容
+}
+
+func (ice *TIntermediateCatchEvent) GetDocumentation() string {
+	return ice.Documentation
+}
+
+func (ice *TIntermediateCatchEvent) GetProperties() []sepc_types.Propertie {
+	return extensions.Properties2Interface(ice.Properties)
 }
 
 func (ice *TIntermediateCatchEvent) GetID() string {

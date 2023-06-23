@@ -1,5 +1,10 @@
 package extensions
 
+// calledElement *TCalledElement github.com/averyyan/bpmn-engine/bpmn/sepc/types.CalledElement
 type TCalledElement struct {
-	ProcessId string `xml:"processId,attr" bson:"process_id"`
+	ProcessID string `xml:"processId,attr"`
+}
+
+func (calledElement *TCalledElement) GetProcessID() string {
+	return calledElement.ProcessID
 }

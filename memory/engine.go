@@ -3,29 +3,43 @@ package memory_engine
 import (
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
 	memory_activity_manager "github.com/averyyan/bpmn-engine/memory/activity/manager"
+	memory_call_activity_manager "github.com/averyyan/bpmn-engine/memory/call_activity/manager"
 	memory_ice_manager "github.com/averyyan/bpmn-engine/memory/ice/manager"
 	memory_msgsub_manager "github.com/averyyan/bpmn-engine/memory/msgsub/manager"
+	memory_process_manager "github.com/averyyan/bpmn-engine/memory/process/manager"
 	memory_process_instance_manager "github.com/averyyan/bpmn-engine/memory/process_instance/manager"
 	memory_task_handler_manager "github.com/averyyan/bpmn-engine/memory/task_handler/manager"
 )
 
 func New() *Engine {
 	return &Engine{
+		processManager:         memory_process_manager.New(),
 		processInstanceManager: memory_process_instance_manager.New(),
 		activityManager:        memory_activity_manager.New(),
 		taskHandlerManager:     memory_task_handler_manager.New(),
 		iceManager:             memory_ice_manager.New(),
 		msgsubManager:          memory_msgsub_manager.New(),
+		callActivityManager:    memory_call_activity_manager.New(),
 	}
 }
 
 // engine *Engine github.com/averyyan/bpmn-engine/bpmn/engine/types.Engine
 type Engine struct {
+	processManager         engine_types.ProcessManager
 	processInstanceManager engine_types.ProcessInstanceManager
 	activityManager        engine_types.ActivityManager
 	taskHandlerManager     engine_types.TaskHandlerManager
 	iceManager             engine_types.ICEManager
 	msgsubManager          engine_types.MessageSubscriptionManager
+	callActivityManager    engine_types.CallActivityManager
+}
+
+func (engine *Engine) CallActivityManager() engine_types.CallActivityManager {
+	return engine.callActivityManager
+}
+
+func (engine *Engine) ProcessManager() engine_types.ProcessManager {
+	return engine.processManager
 }
 
 func (engine *Engine) ICEManager() engine_types.ICEManager {
