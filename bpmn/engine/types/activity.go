@@ -5,16 +5,6 @@ import (
 )
 
 type ActivityManager interface {
-	// // 创建新的活动
-	// Create(ctx context.Context, pi ProcessInstance, baseElement sepc_types.BaseElement) (Activity, error)
-	// // 按状态查找活动
-	// FindByStates(ctx context.Context, pi ProcessInstance, states []sepc_element_types.LifecycleState) ([]Activity, error)
-	// // 设置活动状态为完成
-	// SetCompleted(ctx context.Context, activ Activity) error
-	// // 设置活动状态为激活
-	// SetActive(ctx context.Context, activ Activity) error
-	// // 设置活动状态为失败
-	// SetFailed(ctx context.Context, activ Activity, reason string) error
 }
 
 type Activity interface {
