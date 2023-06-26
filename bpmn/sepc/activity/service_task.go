@@ -1,4 +1,4 @@
-package task
+package activity
 
 import (
 	"github.com/averyyan/bpmn-engine/bpmn/sepc/extensions"
@@ -9,13 +9,13 @@ import (
 // serviceTask *TServiceTask github.com/averyyan/bpmn-engine/bpmn/sepc/types.BaseElement
 // serviceTask *TServiceTask github.com/averyyan/bpmn-engine/bpmn/sepc/types.ServiceTask
 type TServiceTask struct {
-	ID                  string                      `xml:"id,attr"`                               // 元素ID
-	Name                string                      `xml:"name,attr"`                             // 元素名称
-	Documentation       string                      `xml:"documentation,attr"`                    // 元素说明
-	IncomingAssociation []string                    `xml:"incoming"`                              // 元素入Flow元素IDs
-	OutgoingAssociation []string                    `xml:"outgoing"`                              // 元素出Flow元素IDs
-	Properties          []*extensions.TPropertie    `xml:"extensionElements>properties>property"` // 扩展数据
-	TaskDefinition      *extensions.TTaskDefinition `xml:"extensionElements>taskDefinition"`      // Service Task定义
+	ID                  string                      `xml:"id,attr" json:"id"`                                       // 元素ID
+	Name                string                      `xml:"name,attr" json:"name"`                                   // 元素名称
+	Documentation       string                      `xml:"documentation,attr" json:"documentation"`                 // 元素说明
+	IncomingAssociation []string                    `xml:"incoming" json:"incoming"`                                // 元素入Flow元素IDs
+	OutgoingAssociation []string                    `xml:"outgoing" json:"outgoing"`                                // 元素出Flow元素IDs
+	Properties          []*extensions.TPropertie    `xml:"extensionElements>properties>property" json:"properties"` // 外部数据
+	TaskDefinition      *extensions.TTaskDefinition `xml:"extensionElements>taskDefinition" json:"task_definition"` // Service Task定义
 }
 
 // 获取任务类型
@@ -23,8 +23,8 @@ func (serviceTask *TServiceTask) GetTaskDefinition() sepc_types.TaskDefinition {
 	return serviceTask.TaskDefinition
 }
 
-func (serviceTask *TServiceTask) GetDocumentation() string {
-	return serviceTask.Documentation
+func (serviceTask *TServiceTask) HasTaskDefinition() bool {
+	return serviceTask.TaskDefinition != nil
 }
 
 func (serviceTask *TServiceTask) GetID() string {
@@ -47,8 +47,8 @@ func (serviceTask *TServiceTask) GetType() sepc_element_types.ElementType {
 	return sepc_element_types.ServiceTask
 }
 
-func (serviceTask *TServiceTask) HasTaskDefinition() bool {
-	return serviceTask.TaskDefinition != nil
+func (serviceTask *TServiceTask) GetDocumentation() string {
+	return serviceTask.Documentation
 }
 
 func (serviceTask *TServiceTask) GetProperties() []sepc_types.Propertie {

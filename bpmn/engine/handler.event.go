@@ -5,48 +5,34 @@ import (
 	"fmt"
 
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/event"
 	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
 	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 )
 
-func handleIntermediateCatchEvent(
-	ctx context.Context,
-	state engine_types.Engine,
-	pi engine_types.ProcessInstance,
-	ice sepc_types.IntermediateCatchEvent,
-) (bool, error) {
-	if ice.GetMessageEventDefinition() != nil {
-		return handleIntermediateMessageCatchEvent(ctx, state, pi, ice)
-	}
-	return false, fmt.Errorf("未支持此类型事件")
-}
-
 // 中间事件元素处理
-func handleIntermediateMessageCatchEvent(
+func handleMessageIntermediateCatchEvent(
 	ctx context.Context,
-	state engine_types.Engine,
 	pi engine_types.ProcessInstance,
-	iceElement sepc_types.IntermediateCatchEvent,
+	iceElement *event.TIntermediateCatchEvent,
 ) (bool, error) {
-	var ice engine_types.IntermediateCatchEvent
+	var ice engine_types.BaseElement
 	var err error
 	// 找到或者创建激活的消息
-	if ice, err = state.ICEManager().(engine_types.BaseManager).FindOneByStateAndID(
-		ctx, pi, sepc_element_types.Active, iceElement.(sepc_types.BaseElement).GetID(),
-	); err != nil {
-		// 未存在则创建新消息中间事件
-		if ice, err = state.ICEManager().(engine_types.BaseManager).Create(ctx, pi, iceElement.(sepc_types.BaseElement)); err != nil {
+	if ice, err = pi.GetElementManager().FindOneMessageICE(ctx, iceElement.ID); err != nil {
+		ice, err = pi.GetElementManager().CreateMessageICE(ctx, iceElement)
+		if err != nil {
 			return false, err
 		}
 	}
 	// 通过ice信息找到订阅消息
-	msgsub, _ := findMatchingMessageSubscription(ctx, state, pi, iceElement)
+	msgsub := findMatchingMessageSubscription(ctx, pi, iceElement)
 	// 如果存在对应的消息订阅则将订阅消费掉，并将ice设置为完成状态
 	if msgsub != nil {
-		if err := state.MessageSubscriptionManager().SetConsumed(ctx, pi, msgsub, true); err != nil {
+		if err := pi.GetMessageSubscriptionManager().Consumed(ctx, msgsub.GetKey()); err != nil {
 			return false, err
 		}
-		if err := state.ICEManager().(engine_types.BaseManager).SetCompleted(ctx, ice.(engine_types.BaseElement)); err != nil {
+		if err := pi.GetElementManager().DeleteMessageICE(ctx, ice.GetKey()); err != nil {
 			return false, err
 		}
 		return true, nil
@@ -57,19 +43,18 @@ func handleIntermediateMessageCatchEvent(
 // 找到消息元素对应的消息订阅
 func findMatchingMessageSubscription(
 	ctx context.Context,
-	state engine_types.Engine,
 	pi engine_types.ProcessInstance,
 	iceElement sepc_types.IntermediateCatchEvent,
-) (engine_types.MessageSubscription, error) {
+) engine_types.MessageSubscription {
 	msg, err := findMessageById(pi, iceElement.GetMessageEventDefinition().GetMessageRef())
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	msgsub, err := state.MessageSubscriptionManager().FindOneNotConsumedMsgSubByMsgID(ctx, pi, msg.GetID())
+	msgsub, err := pi.GetMessageSubscriptionManager().FindOneByID(ctx, msg.GetID())
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	return msgsub, nil
+	return msgsub
 }
 
 // 通过消息ID找到消息
@@ -89,27 +74,20 @@ func findMessageById(pi engine_types.ProcessInstance, msgID string) (sepc_types.
 // 处理EndEvent元素
 func handleEndEvent(
 	ctx context.Context,
-	state engine_types.Engine,
 	pi engine_types.ProcessInstance,
 ) error {
-	// 检查未完成的任务
-	hasActivity, err := checkUnCompleted(ctx, state.ActivityManager().(engine_types.BaseManager), pi)
-	if err != nil {
-		return err
-	}
-	if hasActivity {
-		return nil
-	}
-	// 检查未完成的子流程
-	hasCallActivity, err := checkUnCompleted(ctx, state.CallActivityManager().(engine_types.BaseManager), pi)
-	if err != nil {
-		return err
-	}
-	if hasCallActivity {
-		return nil
+	// 检查未完成元素
+	var ices []sepc_types.BaseElement
+	for _, element := range pi.GetElementManager().FindActiveElements(ctx) {
+		switch element.GetType() {
+		case sepc_element_types.CallActivity, sepc_element_types.UserTask: // 存在未完成的任务
+			return nil
+		case sepc_element_types.MessageIntermediateCatchEvent:
+			ices = append(ices, element)
+		}
 	}
 	// 检查未完成的事件
-	hasActiveIce, err := checkUnCompletedICE(ctx, state, pi)
+	hasActiveIce, err := checkUnCompletedICE(ctx, pi, ices)
 	if err != nil {
 		return err
 	}
@@ -117,12 +95,12 @@ func handleEndEvent(
 		return nil
 	}
 	// 流程已经完结
-	if err := state.ProcessInstanceManager().SetCompleted(ctx, pi); err != nil {
+	if err := pi.SetCompleted(ctx); err != nil {
 		return err
 	}
 	// 运行父级流程
 	if len(pi.GetParentProcessInstanceKey()) > 0 {
-		if _, err := ContinueProcessInstance(ctx, state, pi.GetParentProcessInstanceKey()); err != nil {
+		if _, err := ContinuePIByKey(ctx, pi.GetParentProcessInstanceKey()); err != nil {
 			return err
 		}
 	}
@@ -131,26 +109,16 @@ func handleEndEvent(
 
 func checkUnCompletedICE(
 	ctx context.Context,
-	state engine_types.Engine,
 	pi engine_types.ProcessInstance,
+	iceElements []sepc_types.BaseElement,
 ) (bool, error) {
 	definitions, err := pi.GetDefinitions()
 	if err != nil {
 		return false, err
 	}
 	activedICE := make(map[string]bool)
-	ices, err := state.ICEManager().(engine_types.BaseManager).FindByStates(
-		ctx,
-		pi,
-		[]sepc_element_types.LifecycleState{
-			sepc_element_types.Active,
-			sepc_element_types.Ready,
-			sepc_element_types.Completed,
-		},
-	)
-
-	for _, ice := range ices {
-		activedICE[ice.GetElementID()] = (ice.GetState() == sepc_element_types.Ready || ice.GetState() == sepc_element_types.Active)
+	for _, ice := range iceElements {
+		activedICE[ice.GetID()] = true
 	}
 	if err != nil {
 		return false, err
@@ -165,29 +133,10 @@ func checkUnCompletedICE(
 			activedICE[flow.TargetRef] = isOneEventCompleted
 		}
 	}
-
 	for _, v := range activedICE {
 		if v {
 			return true, nil
 		}
 	}
 	return false, nil
-}
-
-func checkUnCompleted(
-	ctx context.Context,
-	manager engine_types.BaseManager,
-	pi engine_types.ProcessInstance,
-) (bool, error) {
-	datas, err := manager.FindByStates(
-		ctx, pi,
-		[]sepc_element_types.LifecycleState{
-			sepc_element_types.Ready,
-			sepc_element_types.Active,
-		},
-	)
-	if err != nil {
-		return false, err
-	}
-	return len(datas) > 0, nil
 }

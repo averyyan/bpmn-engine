@@ -11,13 +11,12 @@ import (
 // 处理并行网关
 func handleParallelGateway(
 	ctx context.Context,
-	state engine_types.Engine,
 	pi engine_types.ProcessInstance,
 	baseElement sepc_types.BaseElement,
 ) bool {
 	allInboundsAreScheduled := true
 	for _, inFlowId := range baseElement.GetIncomingAssociation() {
-		allInboundsAreScheduled = state.ProcessInstanceManager().HasScheduledFlow(ctx, pi, inFlowId) && allInboundsAreScheduled
+		allInboundsAreScheduled = pi.HasScheduledFlow(ctx, inFlowId) && allInboundsAreScheduled
 	}
 	return allInboundsAreScheduled
 }

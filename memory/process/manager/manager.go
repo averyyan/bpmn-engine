@@ -2,9 +2,11 @@ package memory_process_manager
 
 import (
 	"context"
+	"embed"
 	"fmt"
 
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
+	bpmn_util "github.com/averyyan/bpmn-engine/bpmn/util"
 	memory_process "github.com/averyyan/bpmn-engine/memory/process"
 )
 
@@ -27,6 +29,20 @@ func (manager *ProcessManager) Create(ctx context.Context, raw []byte) (engine_t
 	}
 	manager.ps[processID] = p
 	return p, nil
+}
+
+// 读取文件夹
+func (manager *ProcessManager) LoadFromEmbed(ctx context.Context, myfs *embed.FS) error {
+	processes, err := bpmn_util.LoadFromEmbed(myfs)
+	if err != nil {
+		return err
+	}
+	for _, process := range processes {
+		if _, err := manager.Create(ctx, process); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (manager *ProcessManager) FindOneByID(ctx context.Context, processID string) (engine_types.Process, error) {

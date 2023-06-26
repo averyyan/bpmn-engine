@@ -15,7 +15,7 @@
     </bpmn:startEvent>
     <bpmn:callActivity id="Activity_1x8w1ty" name="子流程">
       <bpmn:extensionElements>
-        <zeebe:calledElement processId="Process_1b497xk" propagateAllChildVariables="false" />
+        <zeebe:calledElement processId="Process_1b497xk" propagateAllChildVariables="true" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0t8hct3</bpmn:incoming>
       <bpmn:outgoing>Flow_0j8yin7</bpmn:outgoing>

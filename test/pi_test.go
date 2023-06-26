@@ -2,123 +2,111 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/averyyan/bpmn-engine/bpmn/engine"
 	engine_types "github.com/averyyan/bpmn-engine/bpmn/engine/types"
-	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
-	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 	sepc_pi_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/process_instance"
-	memory_engine "github.com/averyyan/bpmn-engine/memory"
+	memory_process_instance "github.com/averyyan/bpmn-engine/memory/process_instance"
 	"github.com/corbym/gocrest/is"
 	"github.com/corbym/gocrest/then"
 )
 
-func TestRun(t *testing.T) {
-	state := memory_engine.New()
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test", func(activ engine_types.ActivatedActivity) error {
-		fmt.Println("绑定程序运行")
-		return activ.Complete()
-	})
-	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/pi.bpmn", nil)
+func TestServiceTask(t *testing.T) {
+	processID := "Process_1vlirp4"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, nil)
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }
 
 func TestExclusivelyGateway(t *testing.T) {
-	v := 2
-	state := memory_engine.New()
-	fun := func(activ engine_types.ActivatedActivity) error {
-		fmt.Println(activ.GetElement().(sepc_types.BaseElement).GetName())
-		return activ.Complete()
-	}
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test0", fun)
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test1", fun)
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test2", fun)
-	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/exclusively-gateway.bpmn", map[string]any{"v": v})
+	v := 1
+	processID := "Process_1ktaoh1"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, map[string]any{"v": v})
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }
 
 func TestParallelGateway(t *testing.T) {
 	v := 0
-	state := memory_engine.New()
-	fun := func(activ engine_types.ActivatedActivity) error {
-		fmt.Println(activ.GetElement().(sepc_types.BaseElement).GetName())
-		return activ.Complete()
-	}
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test0", fun)
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test1", fun)
-	state.TaskHandlerManager().RegisterServiceTaskHandler("end1", func(activ engine_types.ActivatedActivity) error {
-		return activ.Complete()
-	})
-	state.TaskHandlerManager().RegisterServiceTaskHandler("end2", func(activ engine_types.ActivatedActivity) error {
-		return activ.Complete()
-	})
-	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/parallel-gateway.bpmn", map[string]any{"v": v})
+	processID := "Process_0ucn9gz"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, map[string]any{"v": v})
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }
 
 func TestMsgEvent(t *testing.T) {
-	state := memory_engine.New()
-	fun := func(activ engine_types.ActivatedActivity) error {
-		fmt.Println(activ.GetElement().(sepc_types.BaseElement).GetName())
-		return activ.Complete()
-	}
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test", fun)
-	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/msg-event.bpmn", nil)
+	processID := "Process_1bzunxw"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, nil)
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Active))
-	pi, err = engine.PublishEventForInstanceAndRun(context.Background(), state, pi.GetKey(), "test", nil)
+	_, err = engine.PublishEventForInstanceContinue(ctx, pi.GetKey(), "test", nil)
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
+}
+
+func TestSavePI2JSON(t *testing.T) {
+	processID := "Process_1bzunxw"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, nil)
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Active))
+	raw, err := engine.SaveProcessInstance(pi)
+	then.AssertThat(t, err, is.Nil())
+	err = os.WriteFile("./json/pi.json", raw, 0777)
+	then.AssertThat(t, err, is.Nil())
+	pi2, err := engine.LoadProcessInstance[*memory_process_instance.ProcessInstance](raw)
+	then.AssertThat(t, err, is.Nil())
+	_, err = engine.PublishEventForInstanceContinue(ctx, pi2.GetKey(), "test", nil)
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi2.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }
 
 func TestEventsBase(t *testing.T) {
-	msg := "msg2"
-	state := memory_engine.New()
-	fun := func(activ engine_types.ActivatedActivity) error {
-		fmt.Println(activ.GetElement().(sepc_types.BaseElement).GetName())
-		return activ.Complete()
-	}
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test", fun)
-	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/events-base.bpmn", nil)
+	msg := "msg1"
+	processID := "Process_1b497xk"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, nil)
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Active))
-	pi, err = engine.PublishEventForInstanceAndRun(context.Background(), state, pi.GetKey(), msg, nil)
+	_, err = engine.PublishEventForInstanceContinue(ctx, pi.GetKey(), msg, nil)
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }
 
-func TestSubProcess(t *testing.T) {
-	v := 2
-	state := memory_engine.New()
-	raw, _ := os.ReadFile("cases/events-base.bpmn")
-	state.ProcessManager().Create(context.Background(), raw)
-
-	fun := func(activ engine_types.ActivatedActivity) error {
-		fmt.Println(activ.GetElement().(sepc_types.BaseElement).GetName())
-		return activ.Complete()
-	}
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test", fun)
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test0", fun)
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test1", fun)
-	state.TaskHandlerManager().RegisterServiceTaskHandler("test2", fun)
-	pi, err := engine.CreateInstanceByFileAndRun(context.Background(), state, "cases/subprocess.bpmn", map[string]any{"v": v})
+func TestSavePI2JSON2(t *testing.T) {
+	msg := "msg2"
+	processID := "Process_1b497xk"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, nil)
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Active))
-	call, err := state.CallActivityManager().(engine_types.BaseManager).FindOneByStateAndID(
-		context.Background(), pi,
-		sepc_element_types.Active,
-		"Activity_1x8w1ty",
-	)
+	raw, err := engine.SaveProcessInstance(pi)
 	then.AssertThat(t, err, is.Nil())
-	childPI, err := engine.PublishEventForInstanceAndRun(context.Background(), state, call.(engine_types.CallActivity).GetChildProcessInstanceKey(), "msg2", nil)
+	err = os.WriteFile("./json/pi.json", raw, 0777)
+	then.AssertThat(t, err, is.Nil())
+	pi2, err := engine.LoadProcessInstance[*memory_process_instance.ProcessInstance](raw)
+	then.AssertThat(t, err, is.Nil())
+	_, err = engine.PublishEventForInstanceContinue(ctx, pi2.GetKey(), msg, nil)
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi2.GetState(), is.EqualTo(sepc_pi_types.Completed))
+}
+
+func TestCallActivity(t *testing.T) {
+	processID := "Process_1g6e2gd"
+	ctx := context.Background()
+	pi, err := engine.CreatePIByIDAndRun(ctx, processID, nil)
+	then.AssertThat(t, err, is.Nil())
+	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Active))
+	call, err := pi.GetElementManager().FindOneCallActivity(ctx, "Activity_1x8w1ty")
+	then.AssertThat(t, err, is.Nil())
+	childPI, err := engine.PublishEventForInstanceContinue(ctx, call.(engine_types.CallActivity).GetChildPIKey(), "msg1", nil)
 	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, childPI.GetState(), is.EqualTo(sepc_pi_types.Completed))
-	then.AssertThat(t, err, is.Nil())
 	then.AssertThat(t, pi.GetState(), is.EqualTo(sepc_pi_types.Completed))
 }

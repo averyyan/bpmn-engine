@@ -2,8 +2,14 @@ package sepc_types
 
 // 中间事件
 type IntermediateCatchEvent interface {
-	GetMessageEventDefinition() MessageEventDefinition // 获取基于消息的中间事件详情
-	GetTimerEventDefinition() TimerEventDefinition     // 获取基于定时器的中间事件详情
+	// 是否存在消息信息
+	HasMessageEventDefinition() bool
+	// 获取基于消息的中间事件详情
+	GetMessageEventDefinition() MessageEventDefinition
+	// 是否存在时间
+	HasTimerEventDefinition() bool
+	// 获取基于定时器的中间事件详情
+	GetTimerEventDefinition() TimerEventDefinition
 }
 
 // 基于消息的中间事件

@@ -2,32 +2,36 @@ package engine_types
 
 import (
 	"context"
-	"time"
 
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/activity"
+	"github.com/averyyan/bpmn-engine/bpmn/sepc/event"
 	sepc_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types"
 	sepc_element_types "github.com/averyyan/bpmn-engine/bpmn/sepc/types/element"
 )
 
-type BaseManager interface {
-	// 创建新的活动
-	Create(ctx context.Context, pi ProcessInstance, baseElement sepc_types.BaseElement) (BaseElement, error)
-	// 按状态查找活动
-	FindByStates(ctx context.Context, pi ProcessInstance, states []sepc_element_types.LifecycleState) ([]BaseElement, error)
-	// 按元素ID和元素状态查找元素
-	FindOneByStateAndID(ctx context.Context, pi ProcessInstance, state sepc_element_types.LifecycleState, elementID string) (BaseElement, error)
-	// 设置活动状态为完成
-	SetCompleted(ctx context.Context, base BaseElement) error
-	// 设置活动状态为激活
-	SetActive(ctx context.Context, base BaseElement) error
-	// 设置活动状态为失败
-	SetFailed(ctx context.Context, base BaseElement, reason string) error
+// 未完成元素管理
+type ElementManager interface {
+	// 找到所有激活的阻塞元素
+	FindActiveElements(ctx context.Context) []sepc_types.BaseElement
+	// 创建阻塞消息中间事件
+	CreateMessageICE(ctx context.Context, baseElement *event.TIntermediateCatchEvent) (BaseElement, error)
+	// 删除阻塞消息中间件事件
+	DeleteMessageICE(ctx context.Context, msgICEKey string) error
+	// 创建阻塞消息中间事件
+	CreateCallActivity(ctx context.Context, baseElement *activity.TCallActivity) (BaseElement, error)
+	// 删除阻塞消息中间件事件
+	DeleteCallActivity(ctx context.Context, callActivityKey string) error
+	// 通过元素ID找到储存阻塞的消息中间事件
+	FindOneMessageICE(ctx context.Context, elementID string) (BaseElement, error)
+	// 通过元素ID找到储存阻塞的重复活动
+	FindOneCallActivity(ctx context.Context, elementID string) (BaseElement, error)
 }
 
 type BaseElement interface {
-	GetElementID() string
-	GetElementName() string
+	// 获取元素
+	GetElement() sepc_types.BaseElement
+	// 获取元素类型
+	GetElementType() sepc_element_types.ElementType
+	// 元素唯一Key
 	GetKey() string
-	GetProcessInstanceKey() string
-	GetCreateTime() time.Time
-	GetState() sepc_element_types.LifecycleState
 }

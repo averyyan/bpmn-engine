@@ -10,23 +10,9 @@ import (
 // 流程实例管理接口
 type ProcessInstanceManager interface {
 	// 创建流程实例 ctx 上下文用于未来事务 raw 流程文件数据流 variables 实例上下文
-	Create(ctx context.Context, raw []byte, piKey string, variables map[string]any) (ProcessInstance, error)
+	Create(ctx context.Context, raw []byte, variables map[string]any) (ProcessInstance, error)
 	// 通过Key找到流程实例
 	FindOneByKey(ctx context.Context, piKey string) (ProcessInstance, error)
-	// 设置流程实例为激活状态
-	SetActive(ctx context.Context, pi ProcessInstance) error
-	// 设置流程实例为完成状态
-	SetCompleted(ctx context.Context, pi ProcessInstance) error
-	// 设置流程实例为失败状态
-	SetFailed(ctx context.Context, pi ProcessInstance) error
-	// 添加flowID到ScheduledFlows 处理并行网关使用
-	AppendScheduledFlows(ctx context.Context, pi ProcessInstance, flowID string) error
-	// 删除flowID到ScheduledFlows 处理并行网关使用
-	RemoveScheduledFlows(ctx context.Context, pi ProcessInstance, flowID string) error
-	// 判断是否存在
-	HasScheduledFlow(ctx context.Context, pi ProcessInstance, flowID string) bool
-	// 获取
-	GetScheduledFlows(ctx context.Context, pi ProcessInstance) []string
 }
 
 // 流程实例接口
@@ -41,4 +27,26 @@ type ProcessInstance interface {
 	GetVariables() map[string]any
 	// 获取父级流程实例Key
 	GetParentProcessInstanceKey() string
+	// 获取阻塞元素管理
+	GetElementManager() ElementManager
+	// 获取消息订阅管理
+	GetMessageSubscriptionManager() MessageSubscriptionManager
+	// 设置上下文参数
+	SetVariables(variables map[string]any) error
+	// 设置父级流程实例
+	SetParentProcessInstanceKey(ctx context.Context, key string) error
+	// 设置流程实例为激活状态
+	SetActive(ctx context.Context) error
+	// 设置流程实例为完成状态
+	SetCompleted(ctx context.Context) error
+	// 设置流程实例为失败状态
+	SetFailed(ctx context.Context) error
+	// 判断是否存在
+	HasScheduledFlow(ctx context.Context, flowID string) bool
+	// 获取
+	GetScheduledFlows(ctx context.Context) []string
+	// 添加flowID到ScheduledFlows 处理并行网关使用
+	AppendScheduledFlow(ctx context.Context, flowID string) error
+	// 删除flowID到ScheduledFlows 处理并行网关使用
+	RemoveScheduledFlow(ctx context.Context, flowID string) error
 }

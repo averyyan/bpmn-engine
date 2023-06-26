@@ -12,7 +12,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0pq1uvd" sourceRef="StartEvent_1" targetRef="Gateway_0jpp3az" />
     <bpmn:sequenceFlow id="Flow_0sbui2j" name="v 等于0 " sourceRef="Gateway_0jpp3az" targetRef="Activity_00khbu0">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=v == 0</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=v == 2</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0if4d6d" name="v 等于 1" sourceRef="Gateway_0jpp3az" targetRef="Activity_0xrse47">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=v == 1</bpmn:conditionExpression>

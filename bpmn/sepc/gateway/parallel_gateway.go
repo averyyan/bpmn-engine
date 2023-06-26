@@ -9,12 +9,12 @@ import (
 // 并行网关
 // parallelGateway *TParallelGateway github.com/averyyan/bpmn-engine/bpmn/sepc/types.BaseElement
 type TParallelGateway struct {
-	ID                  string                   `xml:"id,attr"`                               // 元素ID
-	Name                string                   `xml:"name,attr"`                             // 元素名称
-	Documentation       string                   `xml:"documentation,attr"`                    // 元素说明
-	IncomingAssociation []string                 `xml:"incoming"`                              // 元素入Flow元素IDs
-	OutgoingAssociation []string                 `xml:"outgoing"`                              // 元素出Flow元素IDs
-	Properties          []*extensions.TPropertie `xml:"extensionElements>properties>property"` // 扩展数据
+	ID                  string                   `xml:"id,attr" json:"id"`                                       // 元素ID
+	Name                string                   `xml:"name,attr" json:"name"`                                   // 元素名称
+	Documentation       string                   `xml:"documentation,attr" json:"documentation"`                 // 元素说明
+	IncomingAssociation []string                 `xml:"incoming" json:"incoming"`                                // 元素入Flow元素IDs
+	OutgoingAssociation []string                 `xml:"outgoing" json:"outgoing"`                                // 元素出Flow元素IDs
+	Properties          []*extensions.TPropertie `xml:"extensionElements>properties>property" json:"properties"` // 外部数据
 }
 
 func (parallelGateway *TParallelGateway) GetDocumentation() string {
